@@ -1,29 +1,27 @@
 # 1. PROJECT IDENTITY
-name: 'vancouver_livability'
-version: '1.0.0'
-config-version: 2
+name: 'vancouver_livability'    # your project name
+version: '1.0.0'                # version tracking
+config-version: 2               # dbt config version (always 2)
 
 # 2. CONNECTION
-profile: 'vancouver_livability'
+profile: 'vancouver_livability' # links to your Snowflake connection
 
 # 3. WHERE YOUR FILES LIVE
-model-paths: ["models"]
-test-paths: ["tests"]
-seed-paths: ["seeds"]
-macro-paths: ["macros"]
+model-paths: ["models"]         # your SQL files are in /models folder
+test-paths: ["tests"]           # your tests are in /tests folder
+seed-paths: ["seeds"]           # CSV files are in /seeds folder
+macro-paths: ["macros"]         # reusable functions in /macros folder
 
 # 4. CLEANUP
-target-path: "target"
-clean-targets:
+target-path: "target"           # where compiled SQL gets saved
+clean-targets:                  # what dbt clean deletes
   - "target"
   - "dbt_packages"
 
-# 5. HOW TO BUILD YOUR MODELS
+# 5. HOW TO BUILD YOUR MODELS (most important for you)
 models:
   vancouver_livability:
-    staging:
-      +materialized: view
-      +schema: SILVER
-    gold:
-      +materialized: table
-      +schema: GOLD
+    staging:                    # models/staging/ folder
+      +materialized: view       # build as views in Snowflake
+    gold:                       # models/gold/ folder
+      +materialized: table      # build as permanent tables
