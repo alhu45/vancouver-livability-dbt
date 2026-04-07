@@ -33,15 +33,15 @@ WITH accessibility_counts AS (
 )
 
 SELECT
-    neighbourhood,
-    total_stops,
-    accessible_stops,
-    inaccessible_stops,
-    unknown_accessibility,
-    pct_accessible,
-    total_trips,
-    total_routes,
-    accessibility_rating,
+    "neighbourhood",
+    "total_stops",
+    "accessible_stops",
+    "inaccessible_stops",
+    "unknown_accessibility",
+    "pct_accessible",
+    "total_trips",
+    "total_routes",
+    "accessibility_rating",
     RANK() OVER (
         ORDER BY pct_accessible DESC
     ) AS accessibility_rank,
