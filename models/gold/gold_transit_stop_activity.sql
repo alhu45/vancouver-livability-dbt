@@ -1,54 +1,60 @@
 {{ config(materialized='table') }}
 
-WITH stop_trip_counts AS (
+WITH accessibility_counts AS (
     SELECT
         s.neighbourhood,
-        s."stop_id",
-        s."stop_name",
-        s."stop_lat",
-        s."stop_lon",
-        s."wheelchair_boarding",
-        r."route_short_name",
-        r."route_long_name",
-        r."route_type",
-        COUNT(DISTINCT t."trip_id")        AS total_trips,
-        COUNT(DISTINCT r."route_id")       AS total_routes_served,
-        COUNT(DISTINCT st."arrival_time")  AS total_arrivals
-    FROM {{ ref('stg_transit_stoptimes') }}  st
-    JOIN {{ ref('stg_transit_stops') }}       s  ON st."stop_id"  = s."stop_id"
-    JOIN {{ ref('stg_transit_trips') }}       t  ON st."trip_id"  = t."trip_id"
-    JOIN {{ ref('stg_transit_routes') }}      r  ON t."route_id"  = r."route_id"
+        COUNT(DISTINCT s."stop_id")                                          AS total_stops,
+        SUM(CASE WHEN s."wheelchair_boarding" = 1 THEN 1 ELSE 0 END)        AS accessible_stops,
+        SUM(CASE WHEN s."wheelchair_boarding" = 2 THEN 1 ELSE 0 END)        AS inaccessible_stops,
+        SUM(CASE WHEN s."wheelchair_boarding" = 0 THEN 1 ELSE 0 END)        AS unknown_accessibility,
+        ROUND(
+            SUM(CASE WHEN s."wheelchair_boarding" = 1 THEN 1 ELSE 0 END) * 100.0
+            / NULLIF(COUNT(DISTINCT s."stop_id"), 0), 2
+        )                                                                    AS pct_accessible,
+        COUNT(DISTINCT t."trip_id")                                          AS total_trips,
+        COUNT(DISTINCT r."route_id")                                         AS total_routes,
+        CASE
+            WHEN ROUND(
+                SUM(CASE WHEN s."wheelchair_boarding" = 1 THEN 1 ELSE 0 END) * 100.0
+                / NULLIF(COUNT(DISTINCT s."stop_id"), 0), 2
+            ) >= 75 THEN 'High Accessibility'
+            WHEN ROUND(
+                SUM(CASE WHEN s."wheelchair_boarding" = 1 THEN 1 ELSE 0 END) * 100.0
+                / NULLIF(COUNT(DISTINCT s."stop_id"), 0), 2
+            ) >= 50 THEN 'Medium Accessibility'
+            ELSE 'Low Accessibility'
+        END                                                                  AS accessibility_rating
+    FROM {{ ref('stg_transit_stops') }}      s
+    JOIN {{ ref('stg_transit_stoptimes') }}  st ON s."stop_id"  = st."stop_id"
+    JOIN {{ ref('stg_transit_trips') }}      t  ON st."trip_id" = t."trip_id"
+    JOIN {{ ref('stg_transit_routes') }}     r  ON t."route_id" = r."route_id"
     WHERE s.neighbourhood != 'Outside Vancouver'
-    GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9
+    GROUP BY 1
 )
 
 SELECT
     neighbourhood,
-    "stop_id",
-    "stop_name",
-    "stop_lat",
-    "stop_lon",
-    "wheelchair_boarding",
-    "route_short_name",
-    "route_long_name",
-    "route_type",
+    total_stops,
+    accessible_stops,
+    inaccessible_stops,
+    unknown_accessibility,
+    pct_accessible,
     total_trips,
-    total_routes_served,
-    total_arrivals,
+    total_routes,
+    accessibility_rating,
     RANK() OVER (
-        PARTITION BY neighbourhood
-        ORDER BY total_trips DESC
-    ) AS rank_within_neighbourhood,
-    RANK() OVER (
-        ORDER BY total_trips DESC
-    ) AS citywide_stop_rank,
+        ORDER BY pct_accessible DESC
+    ) AS accessibility_rank,
     ROUND(
-        total_trips * 100.0 /
-        NULLIF(SUM(total_trips) OVER (PARTITION BY neighbourhood), 0), 2
-    ) AS pct_of_neighbourhood_trips,
+        pct_accessible - AVG(pct_accessible) OVER (), 2
+    ) AS vs_city_avg_accessibility,
+    SUM(accessible_stops) OVER (
+        ORDER BY pct_accessible DESC
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS cumulative_accessible_stops,
     ROUND(
-        total_trips * 100.0 /
-        NULLIF(SUM(total_trips) OVER (), 0), 2
-    ) AS pct_of_city_trips
-FROM stop_trip_counts
-ORDER BY neighbourhood, total_trips DESC
+        accessible_stops * 100.0 /
+        NULLIF(SUM(accessible_stops) OVER (), 0), 2
+    ) AS pct_of_city_accessible_stops
+FROM accessibility_counts
+ORDER BY pct_accessible DESC
