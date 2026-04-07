@@ -49,12 +49,12 @@ SELECT
     easternmost_lon,
     accessible_stops_on_route,
 
-    COUNT(DISTINCT route_id) OVER (
+    COUNT(DISTINCT "route_id") OVER (
         PARTITION BY neighbourhood
     ) AS total_routes_in_neighbourhood,
 
     DENSE_RANK() OVER (
-        ORDER BY COUNT(DISTINCT route_id) OVER (PARTITION BY neighbourhood) DESC
+        ORDER BY COUNT(DISTINCT "route_id") OVER (PARTITION BY neighbourhood) DESC
     ) AS route_diversity_rank,
 
     RANK() OVER (
@@ -62,8 +62,8 @@ SELECT
     ) AS transit_volume_rank,
 
     ROUND(
-        COUNT(DISTINCT route_id) OVER (PARTITION BY neighbourhood) -
-        AVG(COUNT(DISTINCT route_id)) OVER (), 2
+        COUNT(DISTINCT "route_id") OVER (PARTITION BY neighbourhood) -
+        AVG(COUNT(DISTINCT "route_id")) OVER (), 2
     ) AS vs_city_avg_routes,
 
     ROUND(
