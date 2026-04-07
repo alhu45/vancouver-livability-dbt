@@ -18,6 +18,12 @@ clean-targets:                  # what dbt clean deletes
   - "target"
   - "dbt_packages"
 
+# Fixing the UPPER CASE issue
+quoting:
+  database: false
+  schema: false
+  identifier: false
+
 # 5. HOW TO BUILD YOUR MODELS (most important for you)
 models:
   vancouver_livability:
