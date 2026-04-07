@@ -37,9 +37,9 @@ WITH route_neighbourhood_counts AS (
 
 SELECT
     neighbourhood,
-    route_id,
-    route_short_name,
-    route_long_name,
+    "route_id",
+    "route_short_name",
+    "route_long_name",
     route_type_name,
     total_trips,
     unique_stops_served,

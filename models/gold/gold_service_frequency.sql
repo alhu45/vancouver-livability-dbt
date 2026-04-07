@@ -39,9 +39,9 @@ WITH service_counts AS (
 
 SELECT
     neighbourhood,
-    route_short_name,
-    route_long_name,
-    route_type,
+    "route_short_name",
+    "route_long_name",
+    "route_type",
     total_trips,
     monday_trips,
     tuesday_trips,
