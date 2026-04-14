@@ -4,8 +4,10 @@
 ) }}
 
 WITH housing AS (
-    SELECT NEIGHBOURHOOD, ROUND(AVG(AVG_PRICE, 2)) AS average_housing_price
-    FROM {{ ref('gold_housing_summary')}}
+    SELECT
+        NEIGHBOURHOOD,
+        AVG(AVG_PRICE) AS avg_housing_price
+    FROM {{ ref('gold_housing_price_summary') }}
     GROUP BY NEIGHBOURHOOD
 ),
 
