@@ -5,15 +5,12 @@
 
 WITH cleaned AS (
     SELECT
-        Neighbourhood,
-        Property_Type,
-        Date,
-
-        -- Strip $ and commas, cast to numeric
+        "Neighbourhood"     AS neighbourhood,
+        "Property_Type"     AS property_type,
+        "Date"              AS date,
         CAST(
             REPLACE(REPLACE(PRICE, '$', ''), ',', '') AS FLOAT
         ) AS price
-
     FROM {{ ref('stg_housing') }}
     WHERE PRICE IS NOT NULL
 ),
