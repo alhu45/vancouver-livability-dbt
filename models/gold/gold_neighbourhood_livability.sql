@@ -7,7 +7,7 @@ WITH housing AS (
     SELECT
         NEIGHBOURHOOD,
         AVG(AVG_PRICE) AS avg_housing_price
-    FROM {{ ref('gold_housing_price_summary') }}
+    FROM {{ ref('gold_housing_summary') }}
     GROUP BY NEIGHBOURHOOD
 ),
 
