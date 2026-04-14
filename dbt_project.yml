@@ -18,7 +18,7 @@ clean-targets:                  # what dbt clean deletes
   - "target"
   - "dbt_packages"
 
-# Fixing the UPPER CASE issue
+# Fixing Upper Case Error
 quoting:
   database: false
   schema: false
@@ -29,5 +29,7 @@ models:
   vancouver_livability:
     staging:                    # models/staging/ folder
       +materialized: view       # build as views in Snowflake
+      +schema: SILVER           # put them in SILVER schema
     gold:                       # models/gold/ folder
       +materialized: table      # build as permanent tables
+      +schema: GOLD             # put them in GOLD schema
