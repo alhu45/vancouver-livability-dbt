@@ -37,8 +37,8 @@ service_freq AS (
 stop_activity AS (
     SELECT
         NEIGHBOURHOOD,
-        SUM(TOTAL_ARRIVALS)                 AS total_arrivals,
-        COUNT(DISTINCT stop_id)             AS total_stops
+        SUM(TOTAL_ARRIVALS)             AS total_arrivals,
+        COUNT(DISTINCT "stop_id")       AS total_stops
     FROM {{ ref('gold_transit_stop_activity') }}
     GROUP BY NEIGHBOURHOOD
 ),
